@@ -254,13 +254,20 @@
       margin-right: 16px;        /* shift it left visually */
       box-sizing: border-box;
       z-index: 2;
-     }
+    }
 
     .empty-state {
-      padding: 40px 16px;
-      text-align: center;
-      color: #888;
+      padding: 16px;
+      color: #999;
       font-size: 14px;
+    }
+
+    .empty-state.centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      padding: 0;
     }
 
     .client-list::-webkit-scrollbar {

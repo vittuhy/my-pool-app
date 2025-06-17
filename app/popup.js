@@ -3,6 +3,7 @@ const BASE_URL = 'https://console.apify.com/admin/users/';
 let clients = [];
 let favorites = new Set();
 let filteredClients = [];
+let searchTimeout;
 
 const searchInput = document.getElementById('searchInput');
 const clientList = document.getElementById('clientList');
@@ -105,7 +106,7 @@ function handleSearch(e) {
 
 function renderClientList() {
   if (filteredClients.length === 0) {
-    clientList.innerHTML = '<div class="empty-state">No clients found</div>';
+    clientList.innerHTML = '<div class="empty-state centered">No clients found</div>';
     return;
   }
 
@@ -219,6 +220,18 @@ function addClientEventListeners() {
         console.error('Failed to copy:', err);
       }
     });
+  });
+
+  document.getElementById('searchInput').addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+  
+    // Restart the timeout after each input
+    searchTimeout = setTimeout(() => {
+      const searchInput = document.getElementById('searchInput');
+      searchInput.value = '';
+      document.getElementById('clearSearch').classList.remove('visible');
+      handleSearch({ target: searchInput }); // Call handleSearch instead of non-existent filterClients
+    }, 60000); // 10 seconds of inactivity
   });
 }
 
