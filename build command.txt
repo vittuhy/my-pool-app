@@ -1,0 +1,7 @@
+npx electron-packager . MyPoolApp \
+  --platform=darwin \
+  --arch=arm64 \
+  --overwrite \
+  --icon=app/images/icon128.png \
+  --prune=true \
+  --out=dist
