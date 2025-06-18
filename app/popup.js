@@ -4,14 +4,17 @@ let clients = [];
 let favorites = new Set();
 let filteredClients = [];
 let searchTimeout;
+let currentTheme = 'dark'; // default theme
 
 const searchInput = document.getElementById('searchInput');
 const clientList = document.getElementById('clientList');
 const clearSearch = document.getElementById('clearSearch');
+const themeToggle = document.querySelector('.theme-toggle');
 
 async function init() {
   try {
     loadFavorites();
+    loadTheme();
     await loadClients();
     searchInput.focus();
     setupEventListeners();
@@ -35,6 +38,36 @@ function loadFavorites() {
 
 function saveFavorites() {
   localStorage.setItem('favorites', JSON.stringify(Array.from(favorites)));
+}
+
+function loadTheme() {
+  const stored = localStorage.getItem('theme');
+  if (stored && (stored === 'light' || stored === 'dark')) {
+    currentTheme = stored;
+    applyTheme();
+  }
+}
+
+function saveTheme() {
+  localStorage.setItem('theme', currentTheme);
+}
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const icon = themeToggle.querySelector('.theme-toggle-icon');
+  icon.innerHTML = '<circle cx="12" cy="12" r="6" class="theme-toggle-dot"/>';
+  
+  // Set the fill color directly
+  const dot = icon.querySelector('.theme-toggle-dot');
+  if (currentTheme === 'light') {
+    dot.setAttribute('fill', '#222222'); // Dark dot for light mode
+  } else {
+    dot.setAttribute('fill', '#f5f5f7'); // Light dot for dark mode
+  }
 }
 
 async function loadClients() {
@@ -87,6 +120,12 @@ function setupEventListeners() {
     filteredClients = [...clients];
     renderClientList();
     searchInput.focus();
+  });
+
+  themeToggle.addEventListener('click', () => {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+    saveTheme();
   });
 }
 
