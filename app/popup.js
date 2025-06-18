@@ -86,6 +86,7 @@ function setupEventListeners() {
     clearSearch.classList.remove('visible');
     filteredClients = [...clients];
     renderClientList();
+    searchInput.focus();
   });
 }
 
@@ -241,7 +242,8 @@ function addClientEventListeners() {
       searchInput.value = '';
       document.getElementById('clearSearch').classList.remove('visible');
       handleSearch({ target: searchInput }); // Call handleSearch instead of non-existent filterClients
-    }, 60000); // 10 seconds of inactivity
+      searchInput.focus(); // Refocus after auto-clearing
+    }, 60000); // 60 seconds of inactivity
   });
 }
 
