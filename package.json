@@ -1,13 +1,20 @@
 {
   "name": "my-pool-app",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "Electron wrapper for My Pool extension",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-packager . MyPoolApp --platform=darwin --arch=arm64 --overwrite --icon=app/images/icon128.png --prune=true --out=dist --ignore=node_modules/.bin --ignore=node_modules/.cache --ignore=node_modules/.vite --ignore=node_modules/@types --ignore=node_modules/typescript"
   },
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
+    "@electron/universal": "^2.0.3",
     "electron": "^29.4.6",
     "electron-packager": "^17.1.2"
+  },
+  "dependencies": {
+    "@electron/get": "^3.1.0"
   }
 }
