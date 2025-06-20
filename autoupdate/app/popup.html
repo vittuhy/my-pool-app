@@ -236,9 +236,7 @@
       border-bottom: 1px solid var(--border-color);
       width: 100%;
       max-width: calc(100% - 16px);
-      margin-left: 0;
-      margin-right: 0;
-      align-self: stretch;
+      margin: 0 auto;
     }
 
     .client-header {
@@ -247,7 +245,10 @@
       align-items: center;
       gap: 8px;
       margin-bottom: 0;
-      padding-right: 8px;
+      padding-right: 16px;
+      width: 100%;
+      box-sizing: border-box;
+      padding-right: 16px;
     }
 
     .client-info {
@@ -291,9 +292,11 @@
       border: none;
       cursor: pointer;
       padding: 4px;
-      margin-right: 8px;
+      margin-left: 0;
+      margin-right: -16px;
       font-size: 18px;
       color: var(--star-inactive);
+      margin: 0;
     }
 
     .star-button.favorited {
