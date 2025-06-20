@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My pool</title>
+  <style>
+    :root {
+      /* Dark mode (default) */
+      --bg-primary: #1c1c1e;
+      --bg-secondary: #2c2c2e;
+      --bg-tertiary: #3c3c3e;
+      --text-primary: #f5f5f7;
+      --text-secondary: #999;
+      --text-tertiary: #aaa;
+      --border-color: #333;
+      --border-hover: #555;
+      --accent-color: #0a84ff;
+      --error-color: #ff6b6b;
+      --star-color: #ffd60a;
+      --star-inactive: #666;
+      --toggle-dot: #f5f5f7;
+    }
+
+    [data-theme="light"] {
+      /* Light mode */
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f7;
+      --bg-tertiary: #e5e5e7;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --text-tertiary: #98989d;
+      --border-color: #d2d2d7;
+      --border-hover: #c7c7cc;
+      --accent-color: #007aff;
+      --error-color: #ff3b30;
+      --star-color: #ff9500;
+      --star-inactive: #c7c7cc;
+      --toggle-dot: #222222;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 320px;
+      height: 800px;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .titlebar {
+      height: 32px;
+      padding-bottom: 0;
+      -webkit-app-region: drag;
+      background-color: var(--bg-primary);
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding-right: 16px;
+    }
+
+    .theme-toggle {
+      -webkit-app-region: no-drag;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 8px;
+      margin-top: 2px;
+    }
+
+    .theme-toggle:hover {
+      background-color: var(--bg-secondary);
+    }
+
+    .theme-toggle-icon {
+      width: 16px;
+      height: 16px;
+      transition: fill 0.2s ease;
+    }
+
+    .theme-toggle:hover .theme-toggle-icon {
+      fill: var(--accent-color);
+    }
+
+    .theme-toggle-dot {
+      stroke: none;
+      transition: fill 0.2s;
+    }
+
+    .refresh-btn {
+      -webkit-app-region: no-drag;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 8px;
+      margin-top: 2px;
+    }
+
+    .refresh-btn:hover {
+      background-color: var(--bg-secondary);
+    }
+
+    .refresh-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+
+    .refresh-btn:hover .refresh-icon {
+      color: var(--accent-color);
+    }
+
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding-top: 0;
+      margin-top: 12px;
+      padding: 16px 16px 0 16px;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    .search-container {
+      position: relative;
+      flex-shrink: 0;
+      width: 100%;
+      max-width: calc(100% - 20px);
+      margin-left: 0;
+      margin-right: 0;
+      align-self: stretch;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      fill: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 40px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      max-width: 100%;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.3);
+    }
+
+    .clear-search {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .clear-search.visible {
+      display: block;
+      opacity: 1;
+    }
+
+    .clear-search-icon {
+      width: 16px;
+      height: 16px;
+      fill: var(--text-secondary);
+    }
+
+    .clear-search:hover .clear-search-icon {
+      fill: var(--text-primary);
+    }
+
+    .client-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 24px;
+      max-height: calc(100vh - 120px); /* Account for search bar and padding */
+    }
+
+    .client-list.no-scroll {
+      overflow-y: hidden;
+    }
+
+    .client-item {
+      padding: 4px 0;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid var(--border-color);
+      width: 100%;
+      max-width: calc(100% - 16px);
+      margin-left: 0;
+      margin-right: 0;
+      align-self: stretch;
+    }
+
+    .client-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0;
+      padding-right: 8px;
+    }
+
+    .client-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+      margin-left: 4px;
+    }
+
+    .client-status {
+      font-size: 13px;
+      color: var(--text-primary);
+      width: 35px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .client-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      letter-spacing: -0.15px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .client-name:hover {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    .star-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      margin-right: 8px;
+      font-size: 18px;
+      color: var(--star-inactive);
+    }
+
+    .star-button.favorited {
+      color: var(--star-color);
+    }
+
+    .client-id-container {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 0;
+      padding-left: 43px;
+      margin-left: 4px;
+    }
+
+    .client-id {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      line-height: 1;
+    }
+
+    .copy-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      margin-right: -4px;
+    }
+
+    .copy-icon {
+      width: 16px;
+      height: 16px;
+      fill: var(--text-secondary);
+    }
+
+    .hubspot-link {
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      text-decoration: none;
+      margin-left: -4px;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      color: var(--text-secondary);
+    }
+
+    .hubspot-link:focus {
+      outline: none;
+    }
+
+    .hubspot-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .hubspot-link:hover {
+      color: var(--text-secondary);
+    }
+
+    .divider {
+      border: 0;
+      height: 1px;
+      background-color: var(--border-color);
+      margin: 8px 0;
+      width: 100%;
+      max-width: calc(100% - 16px);
+      margin-left: 0;
+      margin-right: 0;
+      align-self: stretch;
+    }
+
+    .section-header {
+      padding: 8px 0;
+      padding-left: 16px;
+      background-color: var(--bg-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      width: 100%;
+      max-width: calc(100% - 16px);
+      margin-left: 0;
+      margin-right: 0;
+      align-self: stretch;
+      box-sizing: border-box;
+      z-index: 2;
+      border-radius: 5px;
+    }
+
+    .empty-state {
+      padding: 16px;
+      color: var(--error-color);
+      font-size: 14px;
+    }
+
+    .empty-state.centered {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      padding: 0;
+      gap: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .no-clients-message {
+      color: var(--error-color);
+      font-size: 14px;
+    }
+
+    .search-console-button {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      text-decoration: none;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .search-console-button:hover {
+      background-color: var(--bg-tertiary);
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .client-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .client-list::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    .client-list::-webkit-scrollbar-thumb:hover {
+      background: var(--border-hover);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="titlebar">
+      <button class="theme-toggle">
+        <svg class="theme-toggle-icon" viewBox="0 0 24 24">
+          <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7zm1-11.94c-1.25 0-2.44.2-3.57.57a.998.998 0 0 0-1.02.24c-.42.24-.54.78-.3 1.2.24.24.42.36.96.24 1.38-.24C9.84 5.1 11.03 5 12.28 5c4.98 0 9 4.02 9 9s-4.02 9-9 9c-4.8 0-8.82-3.48-9.78-8.28-.3-1.2.24-1.8.96-2.04 2.16-.24.42.24.96.36 1.2.24 1.8-.24.42-.24.42-.96.24-1.2.24z"/>
+        </svg>
+      </button>
+      <button id="refreshClients" class="refresh-btn" title="Refresh clients list">
+        <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 0 1 4-4V5l3 3-3 3V8a4 4 0 1 0 4 4"/></svg>
+      </button>
+    </div>
+    <div class="content-wrapper">
+      <div class="search-container">
+        <svg class="search-icon" viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search clients..." />
+        <button id="clearSearch" class="clear-search">
+          <svg class="clear-search-icon" viewBox="0 0 24 24">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+      <div id="clientList" class="client-list"></div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
