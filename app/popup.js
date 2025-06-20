@@ -177,10 +177,6 @@ function renderClientList() {
     });
   }
 
-  if (favoriteClients.length > 0 && nonFavoriteClients.length > 0) {
-    html += '<div class="divider"></div>';
-  }
-
   if (nonFavoriteClients.length > 0) {
     if (favoriteClients.length > 0) {
       html += '<div class="section-header">All Clients</div>';

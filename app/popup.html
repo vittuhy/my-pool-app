@@ -122,7 +122,10 @@
     .search-container {
       position: relative;
       flex-shrink: 0;
-      max-width: calc(100% - 16px);
+      max-width: calc(100% - 20px);
+      margin-left: 0;
+      margin-right: 0;
+      align-self: stretch;
     }
 
     .search-icon {
@@ -146,6 +149,7 @@
       color: var(--text-primary);
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
+      max-width: 100%;
     }
 
     .search-input:focus {
@@ -199,6 +203,11 @@
       display: flex;
       flex-direction: column;
       border-bottom: 1px solid var(--border-color);
+      width: 100%;
+      max-width: calc(100% - 16px);
+      margin-left: 0;
+      margin-right: 0;
+      align-self: stretch;
     }
 
     .client-header {
@@ -268,7 +277,7 @@
     }
 
     .client-id {
-      font-size: 11px;
+      font-size: 13px;
       color: var(--text-tertiary);
       line-height: 1;
     }
@@ -316,6 +325,11 @@
       height: 1px;
       background-color: var(--border-color);
       margin: 8px 0;
+      width: 100%;
+      max-width: calc(100% - 16px);
+      margin-left: 0;
+      margin-right: 0;
+      align-self: stretch;
     }
 
     .section-header {
@@ -329,9 +343,12 @@
       letter-spacing: 0.5px;
       position: sticky;
       top: 0;
-      width: calc(100% - 12px); /* leave space for scrollbar */
-      margin-right: 16px;        /* shift it left visually */
-      box-sizing: border-box;
+      width: 100%;
+      max-width: calc(100% - 16px);
+      margin-left: 0;
+      margin-right: 0;
+      align-self: stretch;
+      border-radius: 5px;
       z-index: 2;
     }
 
