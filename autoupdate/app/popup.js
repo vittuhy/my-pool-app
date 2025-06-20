@@ -205,8 +205,11 @@ function renderClientList() {
 
   if (favoriteClients.length > 0) {
     html += '<div class="section-header">Favorites</div>';
-    favoriteClients.forEach(client => {
+    favoriteClients.forEach((client, idx) => {
       html += renderClientItem(client, true);
+      if (idx < favoriteClients.length - 1) {
+        html += "<div class='divider'></div>";
+      }
     });
   }
 
@@ -214,8 +217,11 @@ function renderClientList() {
     if (favoriteClients.length > 0) {
       html += '<div class="section-header">All Clients</div>';
     }
-    nonFavoriteClients.forEach(client => {
+    nonFavoriteClients.forEach((client, idx) => {
       html += renderClientItem(client, false);
+      if (idx < nonFavoriteClients.length - 1) {
+        html += "<div class='divider'></div>";
+      }
     });
   }
 
