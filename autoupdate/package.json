@@ -2,6 +2,7 @@
   "name": "my_pool_extension_electron_app_auto_update",
   "version": "1.0.0",
   "main": "main.js",
+  "icon": "app/images/icon128.png",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron ."
@@ -14,6 +15,7 @@
     "follow-redirects": "^1.15.6"
   },
   "devDependencies": {
-    "electron": "^36.5.0"
+    "electron": "^36.5.0",
+    "electron-packager": "^17.1.1"
   }
 }
