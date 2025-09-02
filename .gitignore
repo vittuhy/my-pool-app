@@ -1,4 +1,8 @@
-dist/
-node_modules/
-*.log
-*.lock
+local/dist/
+local/node_modules/
+autoupdate/dist/
+autoupdate/node_modules/
+local/*.log
+local/*.lock
+autoupdate/*.log
+autoupdate/*.lock

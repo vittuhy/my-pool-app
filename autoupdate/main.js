@@ -44,10 +44,6 @@ ipcMain.handle('refresh-clients', async () => {
   const clientsPath = path.join(__dirname, 'app', 'clients.csv');
   const backupPath = path.join(__dirname, 'app', 'clients_backup.csv');
   try {
-    // Backup current clients.csv
-    if (fs.existsSync(clientsPath)) {
-      fs.copyFileSync(clientsPath, backupPath);
-    }
     // Download new CSV
     const csvData = await new Promise((resolve, reject) => {
       https.get(csvUrl, (res) => {
@@ -57,36 +53,116 @@ ipcMain.handle('refresh-clients', async () => {
         res.on('error', reject);
       }).on('error', reject);
     });
+    
     // Remove header (first line)
     const lines = csvData.split('\n');
     const noHeader = lines.slice(1).join('\n');
-    // If no data after header, treat as failure
+    
+    // Validate the data - must have actual content
     if (!noHeader.trim()) {
-      console.warn('Fetched CSV is empty after removing header. Not updating files.');
-      if (fs.existsSync(backupPath)) {
-        fs.copyFileSync(backupPath, clientsPath);
-      }
-      return { success: false };
+      console.warn('❌ Fetched CSV is empty after removing header. Not updating files.');
+      console.log('📊 CSV data received:', csvData);
+      return { success: false, error: 'No data received from Google Sheets' };
     }
-    // Write new clients.csv
+    
+    // Check if we have actual client data (not just empty lines)
+    const dataLines = noHeader.trim().split('\n').filter(line => line.trim().length > 0);
+    if (dataLines.length === 0) {
+      console.warn('❌ No valid client data found. Not updating files.');
+      return { success: false, error: 'No valid client data found' };
+    }
+    
+    console.log(`✅ Valid data received: ${dataLines.length} clients`);
+    
+    // SUCCESS! Update both the main file AND the single backup file
+    
+    // 1. Update the main clients.csv file
     fs.writeFileSync(clientsPath, noHeader, 'utf8');
-    // Also update backup to latest version
+    console.log('✅ Successfully updated clients.csv');
+    
+    // 2. Update the single backup file with the new successful data
     fs.writeFileSync(backupPath, noHeader, 'utf8');
-    // Debug: log contents of both files
-    try {
-      const clientsData = fs.readFileSync(clientsPath, 'utf8');
-      const backupData = fs.readFileSync(backupPath, 'utf8');
-      console.log('DEBUG: clients.csv content after fetch:', clientsData.slice(0, 200));
-      console.log('DEBUG: clients_backup.csv content after fetch:', backupData.slice(0, 200));
-    } catch (logErr) {
-      console.error('DEBUG: Error reading files after write:', logErr);
-    }
-    return { success: true };
+    console.log('✅ Successfully updated backup with new data');
+    
+    return { success: true, clientCount: dataLines.length };
+    
   } catch (e) {
-    // On failure, restore backup if exists
+    console.error('❌ Refresh failed:', e.message);
+    
+    // On failure, restore from backup if exists
     if (fs.existsSync(backupPath)) {
       fs.copyFileSync(backupPath, clientsPath);
+      console.log('✅ Restored clients.csv from backup after failure');
     }
-    return { success: false };
+    
+    return { success: false, error: e.message };
+  }
+});
+
+// Add a new IPC handler to get backup information
+ipcMain.handle('get-backup-info', async () => {
+  const backupPath = path.join(__dirname, 'app', 'clients_backup.csv');
+  const clientsPath = path.join(__dirname, 'app', 'clients.csv');
+  
+  try {
+    const backups = [];
+    
+    // Check main backup
+    if (fs.existsSync(backupPath)) {
+      const stats = fs.statSync(backupPath);
+      const content = fs.readFileSync(backupPath, 'utf8');
+      const lines = content.trim().split('\n').filter(line => line.trim());
+      backups.push({
+        name: 'clients_backup.csv',
+        size: stats.size,
+        modified: stats.mtime,
+        clientCount: lines.length,
+        type: 'main'
+      });
+    }
+    
+    // Check for timestamped backups
+    const appDir = path.join(__dirname, 'app');
+    const files = fs.readdirSync(appDir);
+    const timestampedBackups = files.filter(file => 
+      file.startsWith('clients_backup_') && file.endsWith('.csv')
+    );
+    
+    timestampedBackups.forEach(file => {
+      const filePath = path.join(appDir, file);
+      const stats = fs.statSync(filePath);
+      const content = fs.readFileSync(filePath, 'utf8');
+      const lines = content.trim().split('\n').filter(line => line.trim());
+      backups.push({
+        name: file,
+        size: stats.size,
+        modified: stats.mtime,
+        clientCount: lines.length,
+        type: 'timestamped'
+      });
+    });
+    
+    // Check current clients.csv
+    let currentClients = null;
+    if (fs.existsSync(clientsPath)) {
+      const stats = fs.statSync(clientsPath);
+      const content = fs.readFileSync(clientsPath, 'utf8');
+      const lines = content.trim().split('\n').filter(line => line.trim());
+      currentClients = {
+        size: stats.size,
+        modified: stats.mtime,
+        clientCount: lines.length
+      };
+    }
+    
+    return {
+      success: true,
+      backups: backups.sort((a, b) => b.modified - a.modified),
+      currentClients: currentClients
+    };
+    
+  } catch (error) {
+    console.error('Failed to get backup info:', error);
+    return { success: false, error: error.message };
   }
 });

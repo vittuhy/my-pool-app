@@ -16,7 +16,7 @@ console.log('window.electronAPI:', window.electronAPI);
 
 async function init() {
   try {
-    await tryRefreshClients(); // Try to refresh on startup
+    await tryRefreshClients(); // Auto refresh on startup
     loadFavorites();
     loadTheme();
     await loadClients();
@@ -159,6 +159,43 @@ function setupEventListeners() {
       searchInput.focus(); // Refocus after auto-clearing
     }, 60000); // 60 seconds of inactivity
   });
+
+  // Right-click to copy link
+  setupRightClickCopy();
+}
+
+function setupRightClickCopy() {
+  // Handle right-click on client names to copy link
+  document.addEventListener('contextmenu', async (e) => {
+    const clientName = e.target.closest('.client-name');
+    if (clientName) {
+      e.preventDefault();
+      const clientId = clientName.dataset.id;
+      const link = BASE_URL + clientId;
+      
+      try {
+        await navigator.clipboard.writeText(link);
+        
+        // Visual feedback on the client name
+        const originalText = clientName.textContent;
+        clientName.textContent = 'Copied!';
+        clientName.style.color = '#2ecc40';
+        
+        // Show notification
+        setNotification('Link copied to clipboard!', 'success');
+        
+        // Reset after animation
+        setTimeout(() => {
+          clientName.textContent = originalText;
+          clientName.style.color = '';
+        }, 600);
+        
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+        setNotification('Failed to copy link', 'error');
+      }
+    }
+  });
 }
 
 function handleSearch(e) {
@@ -296,13 +333,29 @@ function addClientEventListeners() {
       const id = e.target.closest('.copy-button').dataset.id;
       try {
         await navigator.clipboard.writeText(id);
+        
+        // Visual feedback on the button
         const originalTitle = button.title;
+        const originalHTML = button.innerHTML;
         button.title = 'Copied!';
+        button.innerHTML = `
+          <svg class="copy-icon" viewBox="0 0 24 24" style="fill: #2ecc40;">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+        `;
+        
+        // Show notification
+        setNotification('Client ID copied to clipboard!', 'success');
+        
+        // Reset after animation
         setTimeout(() => {
           button.title = originalTitle;
-        }, 2000);
+          button.innerHTML = originalHTML;
+        }, 600);
+        
       } catch (err) {
         console.error('Failed to copy:', err);
+        setNotification('Failed to copy ID', 'error');
       }
     });
   });
